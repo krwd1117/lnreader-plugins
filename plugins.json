@@ -1,0 +1,15 @@
+[
+  {
+    "id": "booktoki",
+    "name": "Booktoki",
+    "site": "https://booktoki.com",
+    "lang": "Korean",
+    "version": "1.0.0",
+    "url": "https://sqems-125-183-245-66.free.pinggy.net/plugins/korean/booktoki.js",
+    "iconUrl": "https://raw.githubusercontent.com/lnreader/lnreader-plugins/master/icon.png",
+    "nsfw": false,
+    "hasSettings": false,
+    "types": ["Novel"],
+    "filters": []
+  }
+]
