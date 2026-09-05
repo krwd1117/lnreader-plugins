@@ -2,14 +2,10 @@
   {
     "id": "booktoki",
     "name": "Booktoki",
-    "site": "https://booktoki.com",
+    "site": "https://newtoki1.org",
     "lang": "Korean",
-    "version": "1.0.0",
-    "url": "https://sqems-125-183-245-66.free.pinggy.net/plugins/korean/booktoki.js",
-    "iconUrl": "https://raw.githubusercontent.com/lnreader/lnreader-plugins/master/icon.png",
-    "nsfw": false,
-    "hasSettings": false,
-    "types": ["Novel"],
-    "filters": []
+    "version": "1.0.2",
+    "url": "https://raw.githubusercontent.com/krwd1117/lnreader-plugins/main/plugins/korean/booktoki.js",
+    "iconUrl": "https://raw.githubusercontent.com/lnreader/lnreader-plugins/master/icon.png"
   }
 ]
