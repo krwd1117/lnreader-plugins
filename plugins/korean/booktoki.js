@@ -1,15 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-const cheerio_1 = require("cheerio");
+// LNReader 필수 라이브러리 require
+const { fetchApi } = require("@libs/fetch");
+const { NovelStatus } = require("@libs/novelStatus");
+const { load: parseHTML } = require("cheerio");
 
 class BooktokiPlugin {
     constructor() {
         this.id = 'booktoki';
         this.name = 'Booktoki';
-        this.version = '1.0.0';
+        this.version = '1.0.3';
         this.icon = 'siteNotAvailable.png';
-        this.site = 'https://booktoki468.com';
+        this.site = 'https://booktoki468.com'; // 현재 열리는 북토키 주소
     }
 
     async popularNovels(pageNo, { showLatestNovels }) {
@@ -17,7 +20,7 @@ class BooktokiPlugin {
         const url = `${this.site}/novel?sst=${sortParam}&sod=desc&page=${pageNo}`;
         const result = await fetchApi(url);
         const body = await result.text();
-        const $ = (0, cheerio_1.load)(body);
+        const $ = parseHTML(body);
         const novels = [];
 
         $('ul#webtoon-list-all > li').each((_, element) => {
@@ -39,7 +42,7 @@ class BooktokiPlugin {
         const url = this.site + novelPath;
         const result = await fetchApi(url);
         const body = await result.text();
-        const $ = (0, cheerio_1.load)(body);
+        const $ = parseHTML(body);
 
         const novel = {
             path: novelPath,
@@ -48,7 +51,7 @@ class BooktokiPlugin {
             summary: $('div.theme-detail-description').text().trim(),
             author: $(".theme-detail-info-row:contains('작가') .theme-detail-info-value").text().trim(),
             genres: $(".theme-detail-info-row:contains('장르') .theme-detail-info-value").text().trim(),
-            status: $(".theme-detail-info-row:contains('발행구분')").text().includes('완결') ? 'Completed' : 'Ongoing',
+            status: $(".theme-detail-info-row:contains('발행구분')").text().includes('완결') ? NovelStatus.Completed : NovelStatus.Ongoing,
             chapters: [],
         };
 
@@ -83,7 +86,7 @@ class BooktokiPlugin {
                 const targetPageUrl = pageUrl.startsWith('http') ? pageUrl : this.site + pageUrl;
                 const pageRes = await fetchApi(targetPageUrl);
                 const pageBody = await pageRes.text();
-                parseChapters((0, cheerio_1.load)(pageBody));
+                parseChapters(parseHTML(pageBody));
             } catch (_) {}
         }
 
@@ -95,11 +98,11 @@ class BooktokiPlugin {
         const targetUrl = this.site + chapterPath;
         const result = await fetchApi(targetUrl);
         const body = await result.text();
-        const $ = (0, cheerio_1.load)(body);
+        const $ = parseHTML(body);
 
         let content = $('#novel_content').html() || $('.view-content').html() || '';
         if (content) {
-            const $content = (0, cheerio_1.load)(content);
+            const $content = parseHTML(content);
             $content('script, style').remove();
             content = $content.html() || content;
         }
@@ -110,7 +113,7 @@ class BooktokiPlugin {
         const url = `${this.site}/novel?stx=${encodeURIComponent(searchTerm)}&page=${pageNo}`;
         const result = await fetchApi(url);
         const body = await result.text();
-        const $ = (0, cheerio_1.load)(body);
+        const $ = parseHTML(body);
         const novels = [];
 
         $('ul#webtoon-list-all > li').each((_, element) => {
