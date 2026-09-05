@@ -2,10 +2,10 @@
   {
     "id": "booktoki",
     "name": "Booktoki",
-    "site": "https://booktoki.com",
-    "lang": "Korean",
-    "version": "1.0.2",
+    "site": "https://newtoki1.org/book",
+    "lang": "조선말, 한국어",
+    "version": "1.0.4",
     "url": "https://raw.githubusercontent.com/krwd1117/lnreader-plugins/main/plugins/korean/booktoki.js",
-    "iconUrl": "https://raw.githubusercontent.com/krwd1117/lnreader-plugins/master/icon.png"
+    "iconUrl": "https://raw.githubusercontent.com/krwd1117/lnreader-plugins/main/public/static/siteNotAvailable.png"
   }
 ]
