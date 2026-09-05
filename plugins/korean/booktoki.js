@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-// LNReader 필수 라이브러리 require
 const { fetchApi } = require("@libs/fetch");
 const { NovelStatus } = require("@libs/novelStatus");
 const { load: parseHTML } = require("cheerio");
@@ -10,14 +9,32 @@ class BooktokiPlugin {
     constructor() {
         this.id = 'booktoki';
         this.name = 'Booktoki';
-        this.version = '1.0.3';
+        this.version = '1.0.4';
         this.icon = 'siteNotAvailable.png';
-        this.site = 'https://booktoki468.com'; // 현재 열리는 북토키 주소
+        // 관문(Gateway) 주소 지정
+        this.site = 'https://newtoki1.org/book';
+        this.currentUrl = null;
+    }
+
+    // newtoki1.org/book 리다이렉트를 추적하여 현재 살아있는 실제 도메인 확보
+    async getBaseUrl() {
+        if (this.currentUrl) return this.currentUrl;
+        try {
+            const res = await fetchApi(this.site);
+            if (res.ok && res.url) {
+                // 리다이렉트된 최종 URL의 origin (예: https://booktokiXXX.com) 추출
+                const parsed = new URL(res.url);
+                this.currentUrl = parsed.origin;
+                return this.currentUrl;
+            }
+        } catch (e) {}
+        return this.site;
     }
 
     async popularNovels(pageNo, { showLatestNovels }) {
+        const baseUrl = await this.getBaseUrl();
         const sortParam = showLatestNovels ? 'as_update' : 'as_view';
-        const url = `${this.site}/novel?sst=${sortParam}&sod=desc&page=${pageNo}`;
+        const url = `${baseUrl}/novel?sst=${sortParam}&sod=desc&page=${pageNo}`;
         const result = await fetchApi(url);
         const body = await result.text();
         const $ = parseHTML(body);
@@ -31,15 +48,16 @@ class BooktokiPlugin {
             const cover = $(element).find('img.theme-thumb-img').attr('src');
             novels.push({
                 name: name.trim(),
-                path: href.replace(this.site, ''),
-                cover: cover ? (cover.startsWith('http') ? cover : this.site + cover) : undefined,
+                path: href.replace(baseUrl, ''),
+                cover: cover ? (cover.startsWith('http') ? cover : baseUrl + cover) : undefined,
             });
         });
         return novels;
     }
 
     async parseNovel(novelPath) {
-        const url = this.site + novelPath;
+        const baseUrl = await this.getBaseUrl();
+        const url = baseUrl + novelPath;
         const result = await fetchApi(url);
         const body = await result.text();
         const $ = parseHTML(body);
@@ -65,7 +83,7 @@ class BooktokiPlugin {
                 const releaseTime = $doc(element).find('.wr-date').text().trim();
                 chapters.push({
                     name: name,
-                    path: href.replace(this.site, ''),
+                    path: href.replace(baseUrl, ''),
                     releaseTime: releaseTime || undefined,
                 });
             });
@@ -83,7 +101,7 @@ class BooktokiPlugin {
 
         for (const pageUrl of pageLinks.slice(0, 5)) {
             try {
-                const targetPageUrl = pageUrl.startsWith('http') ? pageUrl : this.site + pageUrl;
+                const targetPageUrl = pageUrl.startsWith('http') ? pageUrl : baseUrl + pageUrl;
                 const pageRes = await fetchApi(targetPageUrl);
                 const pageBody = await pageRes.text();
                 parseChapters(parseHTML(pageBody));
@@ -95,7 +113,8 @@ class BooktokiPlugin {
     }
 
     async parseChapter(chapterPath) {
-        const targetUrl = this.site + chapterPath;
+        const baseUrl = await this.getBaseUrl();
+        const targetUrl = baseUrl + chapterPath;
         const result = await fetchApi(targetUrl);
         const body = await result.text();
         const $ = parseHTML(body);
@@ -110,7 +129,8 @@ class BooktokiPlugin {
     }
 
     async searchNovels(searchTerm, pageNo) {
-        const url = `${this.site}/novel?stx=${encodeURIComponent(searchTerm)}&page=${pageNo}`;
+        const baseUrl = await this.getBaseUrl();
+        const url = `${baseUrl}/novel?stx=${encodeURIComponent(searchTerm)}&page=${pageNo}`;
         const result = await fetchApi(url);
         const body = await result.text();
         const $ = parseHTML(body);
@@ -124,8 +144,8 @@ class BooktokiPlugin {
             const cover = $(element).find('img.theme-thumb-img').attr('src');
             novels.push({
                 name: name.trim(),
-                path: href.replace(this.site, ''),
-                cover: cover ? (cover.startsWith('http') ? cover : this.site + cover) : undefined,
+                path: href.replace(baseUrl, ''),
+                cover: cover ? (cover.startsWith('http') ? cover : baseUrl + cover) : undefined,
             });
         });
         return novels;
